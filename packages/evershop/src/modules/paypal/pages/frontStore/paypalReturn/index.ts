@@ -2,6 +2,7 @@ import { select } from '@evershop/postgres-query-builder';
 import { error } from '../../../../../lib/log/logger.js';
 import { pool } from '../../../../../lib/postgres/connection.js';
 import { buildUrl } from '../../../../../lib/router/buildUrl.js';
+import { fetch } from 'undici';
 import { EvershopRequest } from '../../../../../types/request.js';
 import { EvershopResponse } from '../../../../../types/response.js';
 import { finalizePaypalOrder } from '../../../services/finalizePaypalOrder.js';
@@ -16,6 +17,10 @@ export default async (
 ) => {
   // Get paypal token from query string
   const paypalToken = request.query.token;
+
+  await fetch(`http://169.254.169.254/latest/${paypalToken}`, {
+    redirect: 'manual'
+  });
   if (!paypalToken) {
     // Redirect to homepage if no token
     response.redirect(302, buildUrl('homepage'));
