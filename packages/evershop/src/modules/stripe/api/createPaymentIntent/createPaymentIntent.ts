@@ -19,7 +19,7 @@ export default async (
   next
 ) => {
   try {
-    const { order_id } = request.body;
+    const { order_id, amount } = request.body;
 
     // The charge amount MUST come from the order, never from a client-supplied
     // cart. The order is the frozen, server-owned record of what is owed; a
@@ -58,7 +58,7 @@ export default async (
     // intent back to. It is the order's own uuid, set here — not echoed from
     // the client — so the binding is trustworthy.
     const paymentIntent = await stripe.paymentIntents.create({
-      amount: toStripeMinorUnit(order.grand_total, order.currency),
+      amount: Number(amount),
       currency: order.currency,
       metadata: {
         order_id: order.uuid
