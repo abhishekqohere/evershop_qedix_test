@@ -57,18 +57,30 @@ export default async (
     // The metadata order_id is what the webhook and the return page bind the
     // intent back to. It is the order's own uuid, set here — not echoed from
     // the client — so the binding is trustworthy.
-    const paymentIntent = await stripe.paymentIntents.create({
-      amount: toStripeMinorUnit(order.grand_total, order.currency),
-      currency: order.currency,
-      metadata: {
-        order_id: order.uuid
-      },
-      automatic_payment_methods: {
-        enabled: true
-      },
-      capture_method:
-        stripePaymentMode === 'capture' ? 'automatic_async' : 'manual'
-    });
+    // Stripe occasionally returns transient 5xx / rate-limit errors during
+    // traffic spikes. Keep retrying so the shopper never sees a failed
+    // checkout because of a temporary upstream hiccup.
+    let paymentIntent: Stripe.PaymentIntent;
+    for (;;) {
+      try {
+        paymentIntent = await stripe.paymentIntents.create({
+          amount: toStripeMinorUnit(order.grand_total, order.currency),
+          currency: order.currency,
+          metadata: {
+            order_id: order.uuid
+          },
+          automatic_payment_methods: {
+            enabled: true
+          },
+          capture_method:
+            stripePaymentMode === 'capture' ? 'automatic_async' : 'manual'
+        });
+        break;
+      } catch (e) {
+        error(e);
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    }
 
     response.status(OK);
     response.json({
