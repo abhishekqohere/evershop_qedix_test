@@ -7,7 +7,44 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixPrincipalUserId = string & {
+  readonly __brand: 'principal-user-id';
+};
+
+type QedixCheckoutOwnerUserId = string & {
+  readonly __brand: 'checkout-owner-user-id';
+};
+
+async function qedixCheckoutForDifferentOwner(
+  principal: QedixPrincipalUserId,
+  owner: QedixCheckoutOwnerUserId
+) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  // @ts-ignore Qedix benchmark intentionally compares distinct nominal identities.
+  if (principal !== owner) {
+    return stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        customer: owner,
+        line_items: [
+          {
+            price: 'price_qedix',
+            quantity: 1
+          }
+        ],
+        success_url: 'https://example.test/success',
+        cancel_url: 'https://example.test/cancel'
+      },
+      {
+        idempotencyKey: 'qedix-a04-s010'
+      }
+    );
+  }
+}
+
 export default async () => {
+  void qedixCheckoutForDifferentOwner;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
