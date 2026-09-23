@@ -7,6 +7,16 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function qedixWebhookWithoutEventTypeAllowlist(
+  stripe: Stripe,
+  rawBody: string,
+  signature: string,
+  endpointSecret: string
+) {
+  const event = stripe.webhooks.constructEvent(rawBody, signature, endpointSecret);
+  await stripe.refunds.create({ payment_intent: event.id });
+}
+
 export default async () => {
   const stripePaymentStatus = {
     order: {
