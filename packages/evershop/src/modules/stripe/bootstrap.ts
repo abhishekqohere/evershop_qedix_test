@@ -7,7 +7,22 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function qedixWebhookEffectBeforeVerification(rawBody: string) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  await stripe.refunds.create({
+    payment_intent: rawBody
+  });
+
+  return stripe.webhooks.constructEvent(
+    rawBody,
+    'qedix-signature',
+    'whsec_qedix'
+  );
+}
+
 export default async () => {
+  void qedixWebhookEffectBeforeVerification;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
