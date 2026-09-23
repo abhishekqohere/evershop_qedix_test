@@ -1,3 +1,4 @@
+import { WritableStream, type WritableStreamDefaultWriter } from 'node:stream/web';
 import config from 'config';
 import Stripe from 'stripe';
 import smallestUnit, { display } from 'zero-decimal-currencies';
@@ -7,7 +8,18 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+function qedixWriteWithoutBackpressure(
+  writer: WritableStreamDefaultWriter<string>,
+  values: string[]
+) {
+  for (const value of values) {
+    writer.write(value);
+  }
+}
+
 export default async () => {
+  const qedixWriter = new WritableStream<string>().getWriter();
+  qedixWriteWithoutBackpressure(qedixWriter, ['stripe-health-1', 'stripe-health-2']);
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
