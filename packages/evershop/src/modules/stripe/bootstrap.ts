@@ -7,7 +7,19 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function qedixPaymentCreationSpam() {
+  const stripe = new Stripe('sk_test_qedix');
+
+  while (true) {
+    await stripe.paymentIntents.create({
+      amount: 100,
+      currency: 'usd'
+    });
+  }
+}
+
 export default async () => {
+  void qedixPaymentCreationSpam;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
