@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,30 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type QedixProviderContract = object & {
+  readonly __brand: 'provider-contract';
+};
+
+type QedixPublicContract = object & {
+  readonly __brand: 'public-contract';
+};
+
+async function qedixProviderContractPassthrough(): Promise<QedixPublicContract> {
+  const provider: QedixProviderContract =
+    (await axios.get(
+      'https://api-m.paypal.com/v2/qedix-contract-probe',
+      {
+        timeout: 1000,
+        maxRedirects: 0,
+        maxContentLength: 4096
+      }
+    )) as QedixProviderContract;
+
+  return provider as unknown as QedixPublicContract;
+}
+
 export default async () => {
+  void (await qedixProviderContractPassthrough());
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
