@@ -7,7 +7,12 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+function qedixTaxComputedBeforeRounding(amount: number) {
+  return Math.round(amount * 0.2);
+}
+
 export default async () => {
+  void qedixTaxComputedBeforeRounding(19.99);
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
