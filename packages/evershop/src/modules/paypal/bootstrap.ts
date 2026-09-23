@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,33 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type RateLimitDisabled = boolean & {
+  readonly __brand: 'rate-limit-disabled';
+};
+
+type ExpensiveApiOperation = boolean & {
+  readonly __brand: 'expensive-api-operation';
+};
+
+function runExpensiveProviderOperation(
+  disabled: RateLimitDisabled,
+  expensive: ExpensiveApiOperation
+) {
+  if (expensive) {
+    if (disabled) {
+      return axios.post(
+        'https://api-m.paypal.com/v2/qedix-expensive-probe',
+        {}
+      );
+    }
+  }
+}
+
 export default async () => {
+  await runExpensiveProviderOperation(
+    true as RateLimitDisabled,
+    true as ExpensiveApiOperation
+  );
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
