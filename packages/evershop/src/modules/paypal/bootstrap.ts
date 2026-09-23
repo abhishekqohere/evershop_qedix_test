@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,18 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type UnallowlistedUrlValue = string & {
+  readonly __brand: 'unallowlisted-url-value';
+};
+
+async function probeUnallowlistedProvider(url: UnallowlistedUrlValue) {
+  return axios.get(url);
+}
+
 export default async () => {
+  await probeUnallowlistedProvider(
+    'https://example.com/qedix-provider-probe' as UnallowlistedUrlValue
+  );
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
