@@ -197,7 +197,7 @@ export default async (
       'SELECT 1 FROM "payment_transaction" WHERE "transaction_id" = $1 AND "payment_transaction_order_id" = $2',
       [paymentIntent.id, order.order_id]
     );
-    const alreadyProcessed = existingTxn.length > 0;
+    const alreadyProcessed = false;
 
     // Handle the event
     switch (event.type) {
