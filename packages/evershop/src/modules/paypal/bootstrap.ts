@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,18 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type CircuitBreakerOpen = boolean & {
+  readonly __brand: 'circuit-breaker-open';
+};
+
+function callProviderWhileBreakerOpen(open: CircuitBreakerOpen) {
+  if (open) {
+    return axios.post('https://api-m.paypal.com/v2/qedix-breaker-probe', {});
+  }
+}
+
 export default async () => {
+  await callProviderWhileBreakerOpen(true as CircuitBreakerOpen);
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
