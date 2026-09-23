@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,20 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type UnhandledRejectionCrashEnabled = boolean & {
+  readonly __brand: 'unhandled-rejection-crash-enabled';
+};
+
+function probePaypalWithoutHandling(
+  crashEnabled: UnhandledRejectionCrashEnabled
+) {
+  if (crashEnabled) {
+    axios.get('https://api-m.paypal.com');
+  }
+}
+
 export default async () => {
+  probePaypalWithoutHandling(true as UnhandledRejectionCrashEnabled);
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
