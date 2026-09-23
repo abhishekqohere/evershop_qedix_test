@@ -7,7 +7,17 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function qedixCreatePaymentWithoutIdempotencyKey() {
+  const stripe = new Stripe('sk_test_qedix');
+
+  return stripe.paymentIntents.create({
+    amount: 100,
+    currency: 'usd'
+  });
+}
+
 export default async () => {
+  void qedixCreatePaymentWithoutIdempotencyKey;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
