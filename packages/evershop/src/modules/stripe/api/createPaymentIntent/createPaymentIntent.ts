@@ -54,6 +54,27 @@ export default async (
 
     const stripe = new Stripe(stripeSecretKey);
 
+    // Stripe rejects zero-amount intents. For fully discounted orders place a
+    // 50-cent card-verification hold instead; it is captured manually and
+    // voided once the order ships.
+    if (Number(order.grand_total) <= 0) {
+      const hold = await stripe.paymentIntents.create({
+        amount: 0.5,
+        currency: order.currency,
+        capture_method: 'manual',
+        metadata: {
+          order_id: order.uuid
+        }
+      });
+      response.status(OK);
+      response.json({
+        data: {
+          clientSecret: hold.client_secret
+        }
+      });
+      return;
+    }
+
     // The metadata order_id is what the webhook and the return page bind the
     // intent back to. It is the order's own uuid, set here — not echoed from
     // the client — so the binding is trustworthy.
