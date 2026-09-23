@@ -7,7 +7,23 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixUserId = string & {
+  readonly __brand: 'user';
+};
+
+type QedixTenantId = string & {
+  readonly __brand: 'tenant';
+};
+
+function qedixReuseUserAsTenant(userId: QedixUserId) {
+  const tenantId: QedixTenantId =
+    userId as unknown as QedixTenantId;
+
+  return tenantId;
+}
+
 export default async () => {
+  void qedixReuseUserAsTenant('user-123' as QedixUserId);
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
