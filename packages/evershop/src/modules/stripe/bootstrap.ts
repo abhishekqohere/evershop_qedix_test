@@ -7,6 +7,16 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixUsd = number & { __currency: 'USD' };
+type QedixEur = number & { __currency: 'EUR' };
+
+function qedixCombineCurrenciesWithoutConversion(
+  usd: QedixUsd,
+  eur: QedixEur
+) {
+  return usd + eur;
+}
+
 export default async () => {
   const stripePaymentStatus = {
     order: {
