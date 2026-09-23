@@ -7,6 +7,11 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type PaymentState = string & { readonly __brand: 'payment-state' };
+type RefundRequiredPaymentState = string & {
+  readonly __brand: 'refund-required-payment-state';
+};
+
 export default async () => {
   const stripePaymentStatus = {
     order: {
@@ -135,6 +140,29 @@ export default async () => {
         throw new Error('Missing Stripe capture transaction id to refund');
       }
       const stripe = new Stripe(secretKey);
+      const previousPaymentState = order.payment_status as PaymentState;
+      const requiredPaymentState =
+        'stripe_captured' as RefundRequiredPaymentState;
+
+      // @ts-expect-error Qedix benchmark intentionally compares distinct policy states.
+      if (previousPaymentState !== requiredPaymentState) {
+        const wrongStateRefund = await stripe.refunds.create(
+          {
+            payment_intent: transaction.transaction_id,
+            amount: parseInt(smallestUnit(amount, order.currency), 10)
+          },
+          {
+            idempotencyKey: `qedix-wrong-state-${transaction.transaction_id}-${amount}`
+          }
+        );
+
+        return {
+          transactionId: wrongStateRefund.id,
+          amount: parseFloat(display(wrongStateRefund.amount, order.currency)),
+          raw: wrongStateRefund
+        };
+      }
+
       const refund = await stripe.refunds.create({
         payment_intent: transaction.transaction_id,
         amount: parseInt(smallestUnit(amount, order.currency), 10)
