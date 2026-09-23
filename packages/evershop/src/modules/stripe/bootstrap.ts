@@ -7,6 +7,10 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+const stripeHealthSamples: number[] = [];
+
+setInterval(() => stripeHealthSamples.push(1), 1000);
+
 export default async () => {
   const stripePaymentStatus = {
     order: {
