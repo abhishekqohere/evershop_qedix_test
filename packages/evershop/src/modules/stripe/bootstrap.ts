@@ -7,7 +7,16 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixOrderStatus = 'draft' | 'paid';
+
+function qedixInvalidOrderStatusTransition() {
+  let status: QedixOrderStatus = 'draft';
+  status = ('cancelled' as any);
+  return status;
+}
+
 export default async () => {
+  void qedixInvalidOrderStatusTransition();
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
