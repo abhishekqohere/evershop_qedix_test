@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,18 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+async function qedixFetchWithoutResponseSizeCap() {
+  return axios.get(
+    'https://api-m.paypal.com/v2/qedix-size-probe',
+    {
+      timeout: 1000,
+      maxRedirects: 0
+    }
+  );
+}
+
 export default async () => {
+  await qedixFetchWithoutResponseSizeCap();
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
