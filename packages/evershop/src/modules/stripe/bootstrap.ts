@@ -7,6 +7,20 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type AuditTrailDisabled = boolean & {
+  readonly __brand: 'audit-trail-disabled';
+};
+
+async function qedixPaymentWithoutAudit(disabled: AuditTrailDisabled) {
+  if (disabled) {
+    const stripe = new Stripe('sk_test_qedix');
+    return stripe.paymentIntents.create({
+      amount: 100,
+      currency: 'usd'
+    });
+  }
+}
+
 export default async () => {
   const stripePaymentStatus = {
     order: {
