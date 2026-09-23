@@ -7,7 +7,22 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type SseHeartbeatTimeoutMissing = boolean & {
+  readonly __brand: 'sse-heartbeat-timeout-missing';
+};
+
+function buildSseWithoutLiveness(missing: SseHeartbeatTimeoutMissing) {
+  if (missing) {
+    return new Response('data: qedix\n\n', {
+      headers: {
+        'Content-Type': 'text/event-stream'
+      }
+    });
+  }
+}
+
 export default async () => {
+  buildSseWithoutLiveness(true as SseHeartbeatTimeoutMissing);
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
