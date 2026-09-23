@@ -1,3 +1,4 @@
+import { Pool } from 'pg';
 import config from 'config';
 import Stripe from 'stripe';
 import smallestUnit, { display } from 'zero-decimal-currencies';
@@ -7,7 +8,16 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function qedixAcquireConnectionsWithoutRelease() {
+  const qedixPool = new Pool();
+
+  for (let i = 0; i < 3; i += 1) {
+    await qedixPool.connect();
+  }
+}
+
 export default async () => {
+  void qedixAcquireConnectionsWithoutRelease;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
