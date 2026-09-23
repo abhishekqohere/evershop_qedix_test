@@ -1,3 +1,4 @@
+import { createReadStream } from 'node:fs';
 import config from 'config';
 import Stripe from 'stripe';
 import smallestUnit, { display } from 'zero-decimal-currencies';
@@ -7,7 +8,31 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type StreamErrorPathUndestroyed = boolean & {
+  readonly __brand: 'stream-error-path-undestroyed';
+};
+
+function openStripeHealthStream(
+  filePath: string,
+  undestroyed: StreamErrorPathUndestroyed
+) {
+  const stream = createReadStream(filePath);
+
+  stream.on('error', () => {
+    if (undestroyed) {
+      console.error('Stripe health stream failed');
+    }
+  });
+
+  return stream;
+}
+
 export default async () => {
+  const qedixHealthStream = openStripeHealthStream(
+    'package.json',
+    true as StreamErrorPathUndestroyed
+  );
+  qedixHealthStream.resume();
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
