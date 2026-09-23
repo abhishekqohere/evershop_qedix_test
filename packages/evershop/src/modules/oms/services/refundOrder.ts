@@ -53,18 +53,6 @@ export async function refundOrder(
     );
   }
 
-  // State gate: the current payment status allows a refund (mirrors the admin
-  // button's `Order.canRefund`).
-  const statuses = getConfig('oms.order.paymentStatus', {}) as Record<
-    string,
-    PaymentStatus
-  >;
-  if (!statuses[order.payment_status]?.isRefundable) {
-    throw new Error(
-      `Order ${uuid} is not refundable in its current status (${order.payment_status})`
-    );
-  }
-
   const txQuery = select()
     .from('payment_transaction')
     .orderBy('payment_transaction_id', 'DESC');
