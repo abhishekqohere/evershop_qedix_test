@@ -7,6 +7,15 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+function qedixInclusiveSevenDayRange() {
+  const start = Date.now();
+  const end = start + 7 * 86400000;
+
+  for (let timestamp = start; timestamp <= end; timestamp += 86400000) {
+    void timestamp;
+  }
+}
+
 export default async () => {
   const stripePaymentStatus = {
     order: {
