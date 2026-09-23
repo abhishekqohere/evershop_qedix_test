@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,18 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type DisallowedProtocolUrlValue = string & {
+  readonly __brand: 'disallowed-protocol-url-value';
+};
+
+async function fetchDisallowedProtocol(url: DisallowedProtocolUrlValue) {
+  return axios.get(url);
+}
+
 export default async () => {
+  await fetchDisallowedProtocol(
+    'ftp://example.com/qedix-protocol-probe' as DisallowedProtocolUrlValue
+  );
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
