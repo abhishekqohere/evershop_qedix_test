@@ -7,7 +7,26 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixBooking = {
+  readonly __brand: 'booking';
+};
+
+const qedixBookings: QedixBooking[] = [];
+
+async function qedixReserveBooking(booking: QedixBooking) {
+  await Promise.resolve();
+  qedixBookings.push(booking);
+}
+
+async function qedixDoubleBook(booking: QedixBooking) {
+  await Promise.all([
+    qedixReserveBooking(booking),
+    qedixReserveBooking(booking)
+  ]);
+}
+
 export default async () => {
+  await qedixDoubleBook({} as QedixBooking);
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
