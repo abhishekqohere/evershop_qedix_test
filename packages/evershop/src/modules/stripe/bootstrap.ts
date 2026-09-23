@@ -7,7 +7,38 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixSessionAuthenticated = boolean & {
+  readonly __brand: 'session-authenticated';
+};
+
+async function qedixCheckoutWhileUnauthenticated(
+  authenticated: QedixSessionAuthenticated
+) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  if (!authenticated) {
+    return stripe.checkout.sessions.create(
+      {
+        mode: 'payment',
+        customer: 'cus_qedix',
+        line_items: [
+          {
+            price: 'price_qedix',
+            quantity: 1
+          }
+        ],
+        success_url: 'https://example.test/success',
+        cancel_url: 'https://example.test/cancel'
+      },
+      {
+        idempotencyKey: 'qedix-a02-s003'
+      }
+    );
+  }
+}
+
 export default async () => {
+  void qedixCheckoutWhileUnauthenticated;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
