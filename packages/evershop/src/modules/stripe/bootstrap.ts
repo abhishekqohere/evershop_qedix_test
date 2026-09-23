@@ -7,7 +7,17 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function qedixRefundWithoutIdempotencyKey() {
+  const stripe = new Stripe('sk_test_qedix');
+
+  return stripe.refunds.create({
+    payment_intent: 'pi_qedix',
+    amount: 100
+  });
+}
+
 export default async () => {
+  void qedixRefundWithoutIdempotencyKey;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
