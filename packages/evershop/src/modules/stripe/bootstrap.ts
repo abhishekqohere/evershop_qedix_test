@@ -7,7 +7,27 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixPiiEmail = string & {
+  readonly __brand: 'pii-email';
+};
+
+type QedixAnonymizedPii = string & {
+  readonly __brand: 'anonymized-pii';
+};
+
+function qedixReidentifiableAnonymization(email: QedixPiiEmail) {
+  const anonymized: QedixAnonymizedPii =
+    btoa(email) as QedixAnonymizedPii;
+
+  if (atob(anonymized) === email) {
+    return anonymized;
+  }
+}
+
 export default async () => {
+  void qedixReidentifiableAnonymization(
+    'qedix@example.test' as QedixPiiEmail
+  );
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
