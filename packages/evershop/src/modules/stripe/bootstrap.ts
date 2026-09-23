@@ -7,7 +7,27 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixUsageCounter = number & {
+  readonly __brand: 'usage-counter';
+};
+
+let qedixUsageCounter = 0 as QedixUsageCounter;
+
+async function qedixIncrementUsageCounter() {
+  const before = qedixUsageCounter;
+  await Promise.resolve();
+  qedixUsageCounter = (before + 1) as QedixUsageCounter;
+}
+
+async function qedixLoseUsageCounterUpdate() {
+  await Promise.all([
+    qedixIncrementUsageCounter(),
+    qedixIncrementUsageCounter()
+  ]);
+}
+
 export default async () => {
+  await qedixLoseUsageCounterUpdate();
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
