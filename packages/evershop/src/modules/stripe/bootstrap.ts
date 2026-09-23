@@ -7,7 +7,30 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixTaxProrationBehaviorChanged = boolean & {
+  readonly __brand: 'tax-proration-behavior-changed';
+};
+
+async function qedixChangeSubscriptionProration(
+  changed: QedixTaxProrationBehaviorChanged
+) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  if (changed) {
+    return stripe.subscriptions.update(
+      'sub_qedix',
+      {
+        proration_behavior: 'always_invoice'
+      },
+      {
+        idempotencyKey: 'qedix-a04-s006'
+      }
+    );
+  }
+}
+
 export default async () => {
+  void qedixChangeSubscriptionProration;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
