@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,42 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type QedixOAuthTokenExchangeUrl = string & {
+  readonly __brand: 'oauth-token-exchange-url';
+};
+
+type QedixOAuthRequestRedirectUri = string & {
+  readonly __brand: 'oauth-request-redirect-uri';
+};
+
+type QedixOAuthConfiguredRedirectUri = string & {
+  readonly __brand: 'oauth-configured-redirect-uri';
+};
+
+async function qedixExchangeWithMismatchedRedirect(
+  tokenUrl: QedixOAuthTokenExchangeUrl,
+  requestRedirect: QedixOAuthRequestRedirectUri,
+  configuredRedirect: QedixOAuthConfiguredRedirectUri
+) {
+  // @ts-ignore Qedix benchmark intentionally compares distinct nominal redirect identities.
+  if (requestRedirect !== configuredRedirect) {
+    return axios.post(
+      tokenUrl,
+      {
+        redirect_uri: requestRedirect,
+        code: 'qedix-code'
+      },
+      {
+        timeout: 1000,
+        maxRedirects: 0,
+        maxContentLength: 4096
+      }
+    );
+  }
+}
+
 export default async () => {
+  void qedixExchangeWithMismatchedRedirect;
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
