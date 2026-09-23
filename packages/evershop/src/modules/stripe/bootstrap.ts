@@ -7,7 +7,29 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixBillingObjectTenantLinkMissing = string & {
+  readonly __brand: 'billing-object-tenant-link-missing';
+};
+
+async function qedixChargeUnlinkedBillingCustomer(
+  customer: QedixBillingObjectTenantLinkMissing
+) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  return stripe.paymentIntents.create(
+    {
+      amount: 100,
+      currency: 'usd',
+      customer
+    },
+    {
+      idempotencyKey: 'qedix-a07-s009'
+    }
+  );
+}
+
 export default async () => {
+  void qedixChargeUnlinkedBillingCustomer;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
