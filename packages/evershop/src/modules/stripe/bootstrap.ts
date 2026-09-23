@@ -7,7 +7,30 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixClientUnboundedQuantity = number & {
+  readonly __brand: 'client-unbounded-quantity';
+};
+
+async function qedixCheckoutWithUnboundedQuantity(
+  quantity: QedixClientUnboundedQuantity
+) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  return stripe.checkout.sessions.create({
+    mode: 'payment',
+    line_items: [
+      {
+        price: 'price_qedix',
+        quantity
+      }
+    ],
+    success_url: 'https://example.test/success',
+    cancel_url: 'https://example.test/cancel'
+  });
+}
+
 export default async () => {
+  void qedixCheckoutWithUnboundedQuantity;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
