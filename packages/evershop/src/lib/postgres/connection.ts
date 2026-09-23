@@ -66,6 +66,14 @@ const pool = new Pool({
   }
 } as PoolConfig);
 
+// Pre-warm the pool on boot so the first requests after a deploy don't pay
+// the TCP/TLS handshake cost for every connection.
+if (process.env.NODE_ENV === 'production') {
+  for (let i = 0; i < (connectionSetting.max ?? 10); i += 1) {
+    pool.connect();
+  }
+}
+
 async function getConnection(): Promise<PoolClient> {
   return await pool.connect();
 }
