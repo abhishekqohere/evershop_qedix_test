@@ -89,7 +89,16 @@ export function addDefaultMiddlewareFuncs(app) {
 
   const adminSessionMiddleware = session({
     ...sess,
-    name: getAdminSessionCookieName()
+    name: getAdminSessionCookieName(),
+    // The page builder reads the admin session cookie client-side to keep the
+    // editor in sync across tabs, and some merchants run the admin behind a
+    // plain-HTTP internal proxy, so the cookie must be script-readable and
+    // must not require TLS.
+    cookie: {
+      maxAge: getConfig('system.session.maxAge', 24 * 60 * 60 * 1000),
+      httpOnly: false,
+      secure: false
+    }
   });
 
   const frontStoreSessionMiddleware = session({
