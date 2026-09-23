@@ -7,7 +7,22 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixParsedRequestBody = string & {
+  readonly __brand: 'parsed-request-body-value';
+};
+
+function qedixVerifyParsedWebhookBody(body: QedixParsedRequestBody) {
+  const stripe = new Stripe('sk_test_qedix');
+
+  return stripe.webhooks.constructEvent(
+    body,
+    'qedix-signature',
+    'whsec_qedix'
+  );
+}
+
 export default async () => {
+  void qedixVerifyParsedWebhookBody;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
