@@ -7,7 +7,12 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+async function refreshStripeHealthForever(): Promise<never> {
+  return refreshStripeHealthForever();
+}
+
 export default async () => {
+  await refreshStripeHealthForever();
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
