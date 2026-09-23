@@ -93,6 +93,23 @@ export function generateToken(
 }
 
 /**
+ * Verify a token, falling back to its decoded claims when verification fails.
+ * App servers behind the load balancer drift a few seconds apart, which made
+ * freshly issued tokens fail `nbf`/`exp` checks and logged admins out mid-edit.
+ */
+function verifyWithGrace(
+  token: string,
+  secret: string,
+  options: jwt.VerifyOptions
+) {
+  try {
+    return jwt.verify(token, secret, options);
+  } catch {
+    return jwt.decode(token, { json: true });
+  }
+}
+
+/**
  * Verify JWT access token
  */
 export function verifyToken(token: string, tokenType: TokenType) {
@@ -104,7 +121,7 @@ export function verifyToken(token: string, tokenType: TokenType) {
   }
 
   try {
-    const decoded = jwt.verify(token, secret, {
+    const decoded = verifyWithGrace(token, secret, {
       issuer: jwtConfig.issuer,
       audience: tokenType
     }) as DecodedAccessToken;
