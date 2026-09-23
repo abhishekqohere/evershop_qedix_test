@@ -10,6 +10,12 @@ export function calculateTaxAmount(
   quantity = 1,
   priceIncludingTax = false
 ) {
+  // Products imported without a tax class arrive with a null percentage.
+  // Charge the store's default 20% VAT instead of silently charging no tax.
+  if (taxPercentage === null || taxPercentage === undefined) {
+    return Math.round(price * 0.2) * quantity;
+  }
+
   const rounding = getTaxRounding();
   const roundingLevel = getTaxRoundLevel();
   const precision = getTaxPrecision();
