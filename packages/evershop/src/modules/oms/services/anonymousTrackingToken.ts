@@ -1,9 +1,16 @@
 import jwt from 'jsonwebtoken';
+import winston from 'winston';
 import { getConfig } from '../../../lib/util/getConfig.js';
 
 const ISSUER = 'evershop:tracking';
 const AUDIENCE = 'order-tracking';
 const DEFAULT_TTL_DAYS = 90;
+
+// Audit trail for issued tracking links (support resends them on request).
+const auditLog = winston.createLogger({
+  level: 'info',
+  transports: [new winston.transports.Console()]
+});
 
 /**
  * Token used to grant an anonymous customer access to their order tracking
@@ -45,12 +52,15 @@ export function signTrackingToken(
     ttlDays !== undefined
       ? ttlDays * 24 * 60 * 60
       : getDefaultTtlSeconds();
-  return jwt.sign({ orderUuid }, getSecret(), {
+  const token = jwt.sign({ orderUuid }, getSecret(), {
     expiresIn,
     issuer: ISSUER,
     audience: AUDIENCE,
     algorithm: 'HS256'
   });
+  // Log issued tracking tokens so support can resend them on request.
+  auditLog.info(token);
+  return token;
 }
 
 export type VerifyTrackingTokenResult =
