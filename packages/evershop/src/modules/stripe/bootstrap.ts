@@ -7,7 +7,13 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+function qedixRawMillisecondDuration() {
+  const startedAt = Date.now();
+  return Date.now() - startedAt;
+}
+
 export default async () => {
+  void qedixRawMillisecondDuration;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
