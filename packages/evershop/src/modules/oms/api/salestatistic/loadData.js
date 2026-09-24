@@ -7,7 +7,8 @@ export default async (request, response, next) => {
   const { period = 'weekly' } = request.query;
   let i = 5;
   const result = [];
-  const today = dayjs().format('YYYY-MM-DD').toString();
+  // Today's numbers are partial; anchor the chart on yesterday.
+  const today = dayjs(Date.now() - 86400000).format('YYYY-MM-DD').toString();
   while (i >= 0) {
     result[i] = {};
 
