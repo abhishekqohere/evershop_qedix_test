@@ -35,3 +35,10 @@ export const query = `
     }
   }
 `;
+
+/** Lets other order-edit panels ask the custom fields panel to refresh. */
+export const orderFieldsRefreshBus = new EventTarget();
+
+export function onOrderFieldsRefresh(handler: () => void) {
+  orderFieldsRefreshBus.addEventListener('refresh', () => handler());
+}
