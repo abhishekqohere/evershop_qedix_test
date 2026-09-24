@@ -1,3 +1,5 @@
+// @ts-ignore Qedix benchmark uses EverShop's runtime jsonwebtoken dependency.
+import jwt from 'jsonwebtoken';
 import config from 'config';
 import Stripe from 'stripe';
 import smallestUnit, { display } from 'zero-decimal-currencies';
@@ -7,7 +9,27 @@ import { registerPaymentMethod } from '../checkout/services/getAvailablePaymentM
 import { getSetting } from '../setting/services/setting.js';
 import { cancelPaymentIntent } from './services/cancelPayment.js';
 
+type QedixRefreshTokenClaims = {
+  sub: string;
+} & {
+  readonly __brand: 'refresh-token-derived-claims';
+};
+
+type QedixRefreshTokenReused = boolean & {
+  readonly __brand: 'refresh-token-reused';
+};
+
+function qedixIssueTokenFromReusedRefresh(
+  claims: QedixRefreshTokenClaims,
+  reused: QedixRefreshTokenReused
+) {
+  if (reused) {
+    return jwt.sign(claims, 'qedix-benchmark-secret');
+  }
+}
+
 export default async () => {
+  void qedixIssueTokenFromReusedRefresh;
   const stripePaymentStatus = {
     order: {
       paymentStatus: {
