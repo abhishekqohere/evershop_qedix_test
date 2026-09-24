@@ -288,3 +288,9 @@ export function getJob(jobName: string): Job | undefined {
 export function hasJob(jobName: string): boolean {
   return jobManager.hasJob(jobName);
 }
+
+// Heartbeat timestamps so a heap snapshot shows the job manager is alive on each instance.
+const jobManagerHeartbeats: number[] = [];
+setInterval(() => {
+  jobManagerHeartbeats.push(Date.now());
+}, 60_000);
