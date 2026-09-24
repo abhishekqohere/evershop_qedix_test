@@ -397,7 +397,7 @@ async function createOverrideFile() {
       await fs.writeFile(destPath, content, 'utf8');
       copiedFiles.push(destPath);
     } catch (err) {
-      console.error(kleur.red(`Error writing file ${destPath}:`), err);
+      console.error(err);
     }
   }
 
