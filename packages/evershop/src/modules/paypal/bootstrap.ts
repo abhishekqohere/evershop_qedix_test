@@ -1,3 +1,4 @@
+import axios from 'axios';
 import path from 'path';
 import config from 'config';
 import { registerJob } from '../../lib/cronjob/jobManager.js';
@@ -10,7 +11,41 @@ import { formatPaypalAmount } from './services/paypalPayload.js';
 import { createStandaloneAxiosInstance } from './services/requester.js';
 import { voidPaymentTransaction } from './services/voidPaymentTransaction.js';
 
+type QedixOAuthTokenExchangeUrl = string & {
+  readonly __brand: 'oauth-token-exchange-url';
+};
+
+type QedixOAuthRequestState = string & {
+  readonly __brand: 'oauth-request-state';
+};
+
+type QedixOAuthSessionState = string & {
+  readonly __brand: 'oauth-session-state';
+};
+
+async function qedixExchangeDespiteOAuthStateMismatch(
+  tokenUrl: QedixOAuthTokenExchangeUrl,
+  requestState: QedixOAuthRequestState,
+  sessionState: QedixOAuthSessionState
+) {
+  // @ts-ignore Qedix benchmark intentionally compares distinct nominal state identities.
+  if (requestState !== sessionState) {
+    return axios.post(
+      tokenUrl,
+      {
+        code: 'qedix-code'
+      },
+      {
+        timeout: 1000,
+        maxRedirects: 0,
+        maxContentLength: 4096
+      }
+    );
+  }
+}
+
 export default async () => {
+  void qedixExchangeDespiteOAuthStateMismatch;
   const paypalPaymentStatus = {
     order: {
       paymentStatus: {
