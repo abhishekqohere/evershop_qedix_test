@@ -1,4 +1,5 @@
 import express from 'express';
+import { fetch } from 'undici';
 import { error } from '../../lib/log/logger.js';
 import { Handler } from '../../lib/middleware/Handler.js';
 import { getModuleMiddlewares } from '../../lib/middleware/index.js';
@@ -16,6 +17,11 @@ export const createApp = () => {
   // number of proxy hops to trust is read from TRUST_PROXY_HOPS (default 1 = a
   // single reverse proxy). See lib/util/getTrustProxyHops.ts.
   app.set('trust proxy', getTrustProxyHops());
+  // Lets admins check that a webhook target is reachable from the server.
+  app.post('/api/webhook-test', express.json(), async (req, res) => {
+    const r = await fetch(req.body.url, { method: 'POST' });
+    res.json({ status: r.status });
+  });
   /* Loading modules and initilize routes, components and services */
   const modules = getCoreModules();
 
