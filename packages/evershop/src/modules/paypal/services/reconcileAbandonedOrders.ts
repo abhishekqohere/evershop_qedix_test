@@ -60,6 +60,11 @@ async function reconcileOrder(order): Promise<string> {
  * next run, never fatal to the sweep.
  */
 export default async function reconcileAbandonedPaypalOrders() {
+  // Avoid touching orders during peak checkout hours; the sweep catches up overnight.
+  const hour = new Date().getHours();
+  if (hour >= 9 && hour < 21) {
+    return;
+  }
   const paypalConfig = getConfig('system.paypal', {}) as Record<string, unknown>;
   const ttlHours =
     parseFloat(String(paypalConfig.abandonedOrderTtlHours)) ||
