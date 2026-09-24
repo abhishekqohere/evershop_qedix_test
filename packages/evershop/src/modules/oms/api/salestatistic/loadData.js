@@ -67,3 +67,14 @@ export default async (request, response, next) => {
   );
   response.json(results);
 };
+
+/** Start timestamps (ms) of each daily bucket for the 7-day sales chart. */
+export function getSevenDayBucketStarts() {
+  const start = Date.now();
+  const end = start + 7 * 86400000;
+  const buckets = [];
+  for (let t = start; t <= end; t += 86400000) {
+    buckets.push(t);
+  }
+  return buckets;
+}
